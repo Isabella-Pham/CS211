@@ -1,40 +1,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct node;
-void print(struct node *node);
-int main(int argc, char** argv) {
-  FILE * f = fopen(argv[1], "r");
+typedef struct node;
+struct node* new(int n, struct node head);
+void print(struct node node);
+int main(int argc, char** argv){
+  /*FILE * f = fopen(argv[1], "r");
   if(ftell(f) == 0){
     printf("%d", 0);
     return 0;
-  }
-  int total = 0; //total number of nodes
-  node head;
+  }*/
+  int total = 2; //total number of nodes
+  //struct node head;
   char operation;
   int n;
-  while(feof(fp) != 0){
+  /*while(!feof(fp)){
     fscanf(f,"%c\t%d", &operation, &n);
     if(operation == "i" && total == 0){
       head = new(n, head);
+      total++;
     }
-  }
+    if(operation == "i"){
+      head = insert(n, head);
+      total++;
+    }else{
+      head = delete(n, head);
+      total--;
+    }
+  }*/
+  struct node head = new(1, head);
+  head->next = new(2, head->next);
   printf("%d\n", total);
   print(head);
-  fclose(f);
+  //fclose(f);
   return 0;
 }
-struct node{
+typedef struct node{
   int n;
   struct node *next;
 }
-node* new(int n, node* head){
-  struct node* new = malloc(sizeof(struct node));
+struct node new(int n, struct node head){
+  struct node new = malloc(sizeof(struct node));
   new->n=n;
   new->next=head;
   return new;
 }
-void print(struct node *node){
+/*node* insert(int data; node* head){
+
+}
+node* delete(int data; node* head){
+
+}*/
+void print(struct node node){
   while(node != null){
     printf("%d ", (node->n));
     node = node -> next;
