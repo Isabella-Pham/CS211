@@ -14,10 +14,10 @@ Testing with a pa1 folder
 described in the assignment.
 
 (2) Copy the folder to the directory of the autograder
-   
+
 (3) Run the autograder with the following command
 
-$python auto_grader.py 
+$python auto_grader.py
 
 
 It will run your programs and print your scores.
@@ -31,7 +31,7 @@ This mode is to test your final submission (i.e, pa1.tar)
 
 (2) Run the auto_grader with pa1.tar as the argument.
 
-The command line is 
+The command line is
 
 $python auto_grader.py pa1.tar
 
@@ -44,7 +44,7 @@ the testing process.  At the end, if your assignment is completely
 correct, the score will something similar to what is given below.
 
 
-You scored 
+You scored
 5.0  in  second
 5.0  in  fourth
 5.0  in  third

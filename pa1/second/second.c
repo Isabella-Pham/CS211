@@ -24,6 +24,7 @@ node* insert(int data, node* head){
     add->next=head;
     return add; //add is the new head;
   }
+  if(data == head->data) return head;
   node * prev = head;
   node * ptr = head->next;
   while(ptr != NULL){
