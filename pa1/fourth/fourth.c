@@ -53,9 +53,13 @@ int main(int argc, char const *argv[]) {
   //print out the resulting matrix
   for(int i = 0; i < row1; i++){
     for(int j = 0; j < col2; j++){
-      printf("%d ", result[i][j]);
+      if(j < col2-1){
+        printf("%d\t",result[i][j]);
+      }else{
+        printf("%d",result[i][j]);
+      }
     }
-    printf("\n");
+    if(i < row1-1) printf("\n"); //don't print new line for last row
   }
   return 0;
 }

@@ -1,5 +1,5 @@
-all: first
-first: first.c
-	gcc -Wall -Werror -fsanitize=address -std=c11 seventh.c -o seventh
+all: ninth
+ninth: ninth.c
+	gcc -Wall -Werror -fsanitize=address -std=c11 ninth.c -o ninth
 clean:
-	rm -rf first
+	rm -rf ninth

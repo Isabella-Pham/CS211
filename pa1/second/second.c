@@ -13,7 +13,11 @@ node* new(int data, node* next){
 }
 void print(node * head){
   while(head != NULL){
-    printf("%d ", head->data);
+    if(head->next != NULL){
+      printf("%d\t", head->data);
+    }else{
+      printf("%d",head->data);
+    }
     head = head->next;
   }
 }

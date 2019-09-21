@@ -23,6 +23,7 @@ node* insert(node*root, int data, int height){
     printf("duplicate\n");
     return root;
   }
+  return root;
 }
 void search(node*root, int data, int height){
   if(root == NULL){

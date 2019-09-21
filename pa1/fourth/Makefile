@@ -1,5 +1,5 @@
-all: first
-first: first.c
+all: fourth
+fourth: fourth.c
 	gcc -Wall -Werror -fsanitize=address -std=c11 fourth.c -o fourth
 clean:
-	rm -rf first
+	rm -rf fourth
