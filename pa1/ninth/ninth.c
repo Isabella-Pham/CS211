@@ -36,24 +36,19 @@ void search(node*root, int data, int height){
   if(data < root->data) return search(root->left,data,height+1);
   if(data > root->data) return search(root->right,data,height+1);
 }
-node* delete(node*root, int data, int deleteInorder){
-  if(root == NULL){
-    printf("fail\n"); //could not find node to delete
-    return NULL;
-  }
+node* deleteInorder(node*root,int data){
+  if(root == NULL) return NULL;
   if(data < root->data){
-    root->left = delete(root->left,data,0);
+    root->left = deleteInorder(root->left,data);
   }else if(data > root->data){
-    root->right = delete(root->right,data,0);
+    root->right = deleteInorder(root->right,data);
   }else{ //delete this node
     node* replace = (node*)malloc(sizeof(node));
     if(root->left == NULL){
       replace = root->right;
-      //if(deleteInorder == 0) printf("success\n");
       return replace;
     }else if(root->right == NULL){
       replace = root->left;
-      //if(deleteInorder == 0) printf("success\n");
       return replace;
     }else{
       node* ptr = root->right;
@@ -61,10 +56,40 @@ node* delete(node*root, int data, int deleteInorder){
         ptr = ptr->left;
       }
       root->data = ptr->data;
-      //if(deleteInorder == 0) printf("success\n");
-      root->right = delete(root->right,ptr->data,1); //delete ptr
+      root->right = deleteInorder(root->right,ptr->data); //delete ptr
+      return root;
     }
-    if(deleteInorder == 0) printf("success\n");
+  }
+  return root;
+}
+node* delete(node*root, int data){
+  if(root == NULL){
+    printf("fail\n"); //could not find node to delete
+    return NULL;
+  }
+  if(data < root->data){
+    root->left = delete(root->left,data);
+  }else if(data > root->data){
+    root->right = delete(root->right,data);
+  }else{ //delete this node
+    node* replace = (node*)malloc(sizeof(node));
+    if(root->left == NULL){
+      replace = root->right;
+      printf("success\n");
+      return replace;
+    }else if(root->right == NULL){
+      replace = root->left;
+      printf("success\n");
+      return replace;
+    }else{
+      node* ptr = root->right;
+      while((ptr != NULL) && (ptr->left != NULL)){ //find minimum value in right subtree
+        ptr = ptr->left;
+      }
+      root->data = ptr->data;
+      root->right = deleteInorder(root->right,ptr->data); //delete ptr
+    }
+    printf("success\n");
   }
   return root;
 }
@@ -84,7 +109,7 @@ int main(int argc, char const *argv[]) {
     }else if(operation == 's'){ //search
       search(root,data,1);
     }else{ //delete
-      root = delete(root,data,0);
+      root = delete(root,data);
     }
   }
   fclose(f);
