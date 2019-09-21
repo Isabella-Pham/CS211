@@ -16,7 +16,7 @@ node* insert(node*root, int data, int height){
     return add; //add is the new root
   }
   if(data < root->data){
-      root->left = insert(root->left,data,height+1);
+    root->left = insert(root->left,data,height+1);
   }else if(data > root->data){
     root->right = insert(root->right,data,height+1);
   }else{
@@ -49,14 +49,19 @@ node* delete(node*root, int data, int deleteInorder){
     node* replace = (node*)malloc(sizeof(node));
     if(root->left == NULL){
       replace = root->right;
+      //if(deleteInorder == 0) printf("success\n");
+      return replace;
     }else if(root->right == NULL){
       replace = root->left;
+      //if(deleteInorder == 0) printf("success\n");
+      return replace;
     }else{
       node* ptr = root->right;
       while((ptr != NULL) && (ptr->left != NULL)){ //find minimum value in right subtree
         ptr = ptr->left;
       }
       root->data = ptr->data;
+      //if(deleteInorder == 0) printf("success\n");
       root->right = delete(root->right,ptr->data,1); //delete ptr
     }
     if(deleteInorder == 0) printf("success\n");
