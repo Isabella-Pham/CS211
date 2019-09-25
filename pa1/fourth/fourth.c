@@ -26,7 +26,7 @@ int main(int argc, char const *argv[]) {
   int col2 = 0;
   fscanf(f,"%d",&col2);
   if(col1 != row2){
-    printf("bad-matrix");
+    printf("bad-matrices");
     return 0;
   }
   int matrix2[row2][col2];
