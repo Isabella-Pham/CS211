@@ -41,14 +41,13 @@ void newString(const char * str){
 }
 int main(int argc, char const *argv[]) {
   if(argv[1] == NULL){
-    printf("");
     return 0;
   }
   const char * str;
   for(int i = 1; i < argc; i++){
     str = argv[i];
     newString(str);
-    printf(" ");
+    if(i < argc-1) printf(" ");
   }
   return 0;
 }

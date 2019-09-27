@@ -7,24 +7,27 @@ int main(int argc, char const *argv[]) {
     printf("error");
     return 0;
   }
-  //creating matrix1
   int size = 0;
   fscanf(f,"%d",&size);
   int num = 0;
-  int matrix[size][size];
-  int numbers[size*size];
+  int** matrix = (int**)malloc(size*sizeof(int*));
+  for(int i =0; i < size; i++){
+    matrix[i] = (int*)malloc(size*sizeof(int));
+  }
+  int* numbers = (int*)malloc(size*size*sizeof(int));
   for(int i = 0; i < size*size; i++){
     numbers[i] = 0;
   }
   for(int i = 0; i < size; i++){
     for(int j = 0; j < size; j++){
-      fscanf(f,"%d", &num);
+      fscanf(f,"%d\t", &num);
       matrix[i][j] = num;
-      if(numbers[num-1] == 0){
-        numbers[num-1] = 1;
-      }else{ //repeat number
+      int index = num-1;
+      if((size*size-1)<index || numbers[index] == 1){
         printf("not-magic");
         return 0;
+      }else(numbers[num-1] == 0){
+        numbers[num-1] = 1;
       }
     }
   }
@@ -56,5 +59,11 @@ int main(int argc, char const *argv[]) {
     }
   }
   printf("magic");
+  //freeing 2d array
+  for(int i = 0; i < size; i++){
+    free(matrix[i]);
+  }
+  free(matrix);
+  free(numbers);
   return 0;
 }

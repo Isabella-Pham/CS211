@@ -74,6 +74,14 @@ int total(node* head){
   }
   return num;
 }
+void freeNodes(node * head){
+  node * ptr = head;
+  while(ptr != NULL){
+    ptr = head;
+    head = head->next;
+    free(ptr);
+  }
+}
 int main(int argc, char** argv){
   FILE * f = fopen(argv[1], "r");
   if(f==NULL){
@@ -99,5 +107,6 @@ int main(int argc, char** argv){
     printf("%d\n", numNodes);
     print(head);
   }
+  freeNodes(head);
   return 0;
 }

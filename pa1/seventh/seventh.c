@@ -10,7 +10,6 @@ int getLength(char * str){
 }
 int main(int argc, char const *argv[]) {
   if(argv[1] == NULL){
-    printf("");
     return 0;
   }
   char * str;

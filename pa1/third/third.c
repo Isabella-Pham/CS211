@@ -48,6 +48,20 @@ void print(node* numbers[]){
     i++;
   }
 }
+void freeNodes(node * head){
+  node * ptr = head;
+  while(ptr != NULL){
+    ptr = head;
+    head = head->next;
+    free(ptr);
+  }
+}
+void freehtable(node * table[]){
+  for(int i = 0; i < 1000; i++){
+    free(table[i]);
+  }
+  free(table);
+}
 int main(int argc, char const *argv[]) {
   FILE * f = fopen(argv[1], "r");
   if(f==NULL){
@@ -76,8 +90,8 @@ int main(int argc, char const *argv[]) {
         printf("absent\n");
       }
     }
-    //print(htable->table);
   }
   fclose(f);
+  freehtable(htable->table);
   return 0;
 }
