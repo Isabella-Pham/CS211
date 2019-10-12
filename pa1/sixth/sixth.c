@@ -15,8 +15,7 @@ int getLength(char * str){
   }
   return length;
 }
-void newString(const char * str){
-  char * string = (char *) str;
+void newString(char * string){
   int length = getLength(string);
   char c = string[0];
   int canPrint = 0;
@@ -39,11 +38,11 @@ void newString(const char * str){
     printf("ay");
   }
 }
-int main(int argc, char const *argv[]) {
+int main(int argc, char * argv[]) {
   if(argv[1] == NULL){
     return 0;
   }
-  const char * str;
+  char * str;
   for(int i = 1; i < argc; i++){
     str = argv[i];
     newString(str);
