@@ -26,6 +26,7 @@ int** multiply(int** matrix1, int** matrix2){
   }
   return result;
 }
+
 int** transpose(int** matrix){
   int row=sizeof(matrix)/sizeof(matrix[0]);
   int col=sizeof(matrix[0]/sizeof(matrix[0][0]));
@@ -41,8 +42,14 @@ int** transpose(int** matrix){
   }
   return result;
 }
-int** Gauss(int** matrix){
 
+int** Gauss(int** matrix){
+  int row=sizeof(matrix)/sizeof(matrix[0]);
+  int col=sizeof(matrix[0]/sizeof(matrix[0][0]));
+  int** aug= (int**)malloc((col+col)*sizeof(int*));
+  for(int i = 0; i < col; i++){
+    aug[i] = (int*)malloc(row*sizeof(int));
+  }
 }
 int main(int argc, char *argv[]) {
   /* code */

@@ -12,71 +12,11 @@ char** createGrid(FILE * f){
   char num;
   for(int i = 0; i < 16; i++){
     for(int j = 0; j < 16; j++){
-      fscanf(f,"%c", &num);
+      fscanf(f,"%c\t", &num);
       grid[i][j] = num;
     }
+  }
   return grid;
-  }
-}
-
-bool canAssign(char** grid, int *row, int *col, char hex){
-  //returns true if hex is safe to assign to the box
-  //checking if used in row
-  if(grid[*row][*col] != '-') return false;
-  for(int i = 0; i < 16; i++){
-    if(grid[*row][i] == hex) return false;
-    if(grid[*row][i] == '-'){
-      *row = -1;
-      *col = -1;
-      return false;
-    }
-  }
-  //checking if used in column
-  for(int i = 0; i < 16; i++){
-    if(grid[i][*col] == hex) return false;
-    if(grid[i][*col] == '-'){
-      *row = -1;
-      *col = -1;
-      return false;
-    }
-  }
-  //checking if used in box
-  int boxRow = *row-*row%3;
-  int boxCol = *col-*col%3;
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 3; j++){
-      if(grid[boxRow+i][boxCol+j] == hex) return false;
-    }
-    if(grid[boxRow+i][boxCol+i] == '-'){
-      *row = -1;
-      *col = -1;
-      return false;
-    }
-  }
-  return true;
-}
-
-bool isFilled(char** grid){
-  //returns true if the grid is filled
-  for(int i = 0; i < 16; i++){
-    for(int j = 0; j < 16; j++){
-      if(grid[i][j] == '-') return false;
-    }
-  }
-  return true;
-}
-
-void findEmpty(char** grid, int *row, int *col){
-  for(int i = 0; i < 16; i++){
-    for(int j = 0; j < 16; j++){
-      if(grid[i][j] == '-'){
-        *row = i;
-        *col = j;
-        return;
-      }
-    }
-  }
-  return;
 }
 
 char getHex(int i){
@@ -89,22 +29,14 @@ char getHex(int i){
   if(i == 15) return 'F';
 }
 
-char** solve(char** grid){
-  int row = 0;
-  int col = 0;
-  while(!isFilled(grid)){
-    findEmpty(grid, &row, &col);
-    int i;
-    for(i = 0; i < 16; i++){
-      char hex = getHex(i);
-      if(canAssign(grid, &row, &col, hex)){
-        grid[row][col] = hex;
-      }
-      if(row == -1 && col == -1) break;
-    }
-    if(i == 16) return NULL; //no numbers worked
-  }
-  return grid;
+int getDec(char c){
+  if(c == 'A') return 10;
+  if(c == 'B') return 11;
+  if(c == 'C') return 12;
+  if(c == 'D') return 13;
+  if(c == 'E') return 14;
+  if(c == 'F') return 15;
+  return c-'0';
 }
 
 void printGrid(char** grid){
@@ -117,19 +49,137 @@ void printGrid(char** grid){
   }
 }
 
+bool canFill(char** grid){
+  //returns true if the grid is not filled
+  for(int i = 0; i < 16; i++){
+    for(int j = 0; j < 16; j++){
+      if(grid[i][j] == '-') return true;
+    }
+  }
+  return false;
+}
+
+int numLeft(char** grid){ //returns the number of spaces left to solve
+  int num = 0;
+  for(int i = 0; i < 16; i++){
+    for(int j = 0; j < 16; j++){
+      if(grid[i][j] == '-') num++;
+    }
+  }
+  return num;
+}
+
+char * getOptions(char** grid, int row, int col){
+  //returns an array of possible values a square could be
+  char * options = (char*)malloc(16*sizeof(char)); //= {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'}; //possible options to use to fill empty spot
+  for(int i = 0; i < 16; i++){
+    options[i] = getHex(i);
+  }
+  //removing values based on row
+  for(int i = 0; i < 16; i++){
+    if(grid[row][i] == '-') continue;
+    int dec = getDec(grid[row][i]);
+    options[dec] = 'Z';
+  }
+  //removing values based on column
+  for(int i = 0; i < 16; i++){
+    if(grid[i][col] == '-') continue;
+    int dec = getDec(grid[i][col]);
+    options[dec] = 'Z';
+  }
+  //removing values based on box
+  int boxRow = row-row%4;
+  int boxCol = col-col%4;
+  for(int i = 0; i < 4; i++){
+    for(int j = 0; j < 4; j++){
+      if(grid[boxRow+i][boxCol+j] == '-') continue;
+      int dec = getDec(grid[boxRow+i][boxCol+j]);
+      options[dec] = 'Z';
+    }
+  }
+  return options;
+}
+
+char getChar(char * options){
+  bool one = true;
+  char ret;
+  for(int i = 0; i < 16; i++){
+    if(options[i] != 'Z'){
+      if(!one){ //there are multiple options
+        ret = 'Z';
+        break;
+      }
+      ret = options[i];
+      one = false;
+    }
+  }
+  return ret;
+}
+
+char** solve(char** grid){
+  int num = numLeft(grid);
+  while(canFill(grid)){
+    int i,j;
+    for(i = 0; i < 16; i++){
+      char c;
+      for(j = 0; j < 16; j++){
+        if(grid[i][j] == '-'){
+          char * options = getOptions(grid, i, j);
+          c = getChar(options);
+          if(c != 'Z'){
+            grid[i][j] = c;
+          }
+        }
+      }
+    }
+    if(num == numLeft(grid)){
+      return NULL; //nothing was changed, grid cannot be solved
+    }else{
+      num = numLeft(grid);
+    }
+  }
+  return grid;
+}
+
+bool isLegitimate(char** grid){
+  //checks that the grid does not break hexadoku rules
+  for(int i = 0; i < 16; i++){
+    for(int j = 0; j < 16; j++){
+      //check row
+      char curr = grid[i][j];
+      for(int k = 0; k < 16; k++){
+        if(curr == grid[i][k] && k != j) return false;
+      }
+      //check column
+      for(int k = 0; k < 16; k++){
+        if(curr == grid[k][j] && k != i) return false;
+      }
+      //check box
+      int boxRow = i-i%4;
+      int boxCol = j-j%4;
+      for(int k = 0; k < 4; k++){
+        for(int l = 0; l < 4; l++){
+          if(curr == grid[boxRow+k][boxCol+l] && boxRow+k != i && boxCol+l != j) return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 int main(int argc, char *argv[]){
   FILE * f = fopen(argv[1], "r");
   if(f==NULL){
-    printf("error");
+    printf("error: file not found");
     return 0;
   }
   char** grid = createGrid(f);
   if(grid == NULL){
-    printf("error");
+    printf("error: file is not correctly formatted or is empty");
     return 0;
   }
   grid = solve(grid);
-  if(grid == NULL){
+  if(grid == NULL || !isLegitimate(grid)){
     printf("no-solution");
   }else{
     printGrid(grid);
