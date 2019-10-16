@@ -52,19 +52,6 @@ double** subtractRows(double** matrix, int row1, int row2, int col, double c){
   return matrix;
 }
 
-bool isIdentity(double** matrix){
-  //takes in an augmented matrix and returns true if the left side is the identity
-  int row=sizeof(matrix)/sizeof(matrix[0]);
-  for(int i = 0; i < row; i++){
-    for(int j = 0; j < row; j++){
-      if((i == j && matrix[i][j] != 1) || matrix[i][j] != 0){
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
 double** forward(double ** matrix, int row, int col){
   for(int i = 0; i < row; i++){
     for(int j = 0; j <= row; j++){
@@ -83,8 +70,10 @@ double** forward(double ** matrix, int row, int col){
 double** backward(double** matrix, int row, int col){
   for(int i = row-1; i >= 0; i--){
     for(int j = col-1; j > i; j--){
-      double c = matrix[i][j];
-      matrix = subtractRows(matrix, i, j, col+col, c);
+      if(matrix[i][j] != 0){
+        double c = matrix[i][j];
+        matrix = subtractRows(matrix, i, j, col+col, c);
+      }
     }
   }
   return matrix;
@@ -93,7 +82,7 @@ double** backward(double** matrix, int row, int col){
 void printMatrix(double** matrix, int row, int col){
   for(int i = 0; i < row; i++){
     for(int j = 0; j < col; j++){
-      printf("%f\t", matrix[i][j]);
+      printf("%lf\t", matrix[i][j]);
     }
     printf("\n");
   }
@@ -125,6 +114,8 @@ double** Gauss(double** matrix, int row, int col){
   //backward elimination to get to RREF
   aug = backward(aug, row, col);
 
+  //printMatrix(aug,row,col+col);
+
   double** inverse = (double**)malloc(row*sizeof(double*));
   for(int i = 0; i < col; i++){
     inverse[i] = (double*)malloc(col*sizeof(double));
@@ -138,45 +129,118 @@ double** Gauss(double** matrix, int row, int col){
   return inverse;
 }
 
-double** createMatrix(FILE * f){
-  int col;
-  fscanf(f,"%d\n", &col);
-  col = col + 1;
-  int row;
-  fscanf(f, "%d\n", &row);
-  //allocating space for grid
-  double** grid=(double**)malloc(row*sizeof(double*));
+double** getW(double** x, double ** y, int row, int col){
+  double** xT=(double**)malloc((col+1)*sizeof(double*));
+	for(int i = 0; i < col+1; i++){
+		xT[i]=(double*)malloc(row*sizeof(double));
+	}
+  double** xTx=(double**)malloc(col*sizeof(double*));
+	for(int i = 0; i < col; i++){
+		xTx[i]=(double*)malloc(col*sizeof(double));
+	}
+  double** xTxInv = (double**)malloc(col*sizeof(double*));
+	for(int i = 0; i < col; i++){
+		xTx[i]=(double*)malloc(col*sizeof(double));
+	}
+  double** xTxInvxT = (double**)malloc(col*sizeof(double*));
   for(int i = 0; i < col; i++){
-    grid[i] = (double*)malloc(col*sizeof(double));
+    xTx[i]=(double*)malloc(row*sizeof(double));
   }
-  //populate grid
-  double num;
-  for(int i = 0; i < row; i++){
-    for(int j = 0; j < col; j++){
-      fscanf(f,"%0.0lf ", &num);
-      grid[i][j] = num;
-      printf("%0.0lf\n", num);
+  double** w=(double**)malloc((col)*sizeof(double*));
+  for(int i = 0; i < col; i++){
+    w[i] = (double*)malloc(1*sizeof(double));
+  }
+  xT = transpose(x, row, col+1);
+  xTx = multiply(xT, x, col, row, row, col);
+  xTxInv = Gauss(xTx,col,col);
+  //printMatrix(xTxInv,col,col);
+  xTxInvxT = multiply(xTxInv,xT, col, col, col, row);
+  w = multiply(xTxInvxT, y, col, row, row, 1);
+  return w;
+}
+
+double** predict(double** test, double** w, int tests, int row, int col){
+  double** y=(double**)malloc(tests*sizeof(double*));
+  for(int i = 0; i < tests; i++){
+    y[i]=(double*)malloc(1*sizeof(double));
+  }
+  double price = w[0][0];
+  for(int i = 0; i < tests; i++){
+    for(int j = 0; j < col-1; j++){
+      price = price+(test[i][j]*w[j+1][0]);
     }
+    y[i][0] = price;
   }
-  return grid;
+  return y;
 }
 
 int main(int argc, char *argv[]) {
-  FILE * f = fopen("test.txt", "r");
-  //matrix = createMatrix(f);
-  double a[3][3] = {{1,2,4},{1,6,7},{1,3,2}};
-  double** grid=(double**)malloc(3*sizeof(double*));
-  for(int i = 0; i < 3; i++){
-    grid[i] = (double*)malloc(3*sizeof(double));
+  FILE * f = fopen(argv[1], "r"); //train file
+  if(f == NULL){
+    printf("error: file not found");
+    return 0;
   }
-  for(int i = 0; i < 3; i++){
-    for(int j = 0; j < 3; j++){
-      grid[i][j] = a[i][j];
+  int xcol;
+  fscanf(f,"%d\n", &xcol);
+  //xcol = xcol + 1;
+  int xrow;
+  fscanf(f,"%d\n", &xrow);
+  //allocating space for grid
+  double** x=(double**)malloc(xrow*sizeof(double*));
+  for(int i = 0; i < xrow; i++){
+      x[i] = (double*)malloc((xcol+1)*sizeof(double));
+  }
+  double** y = (double**)malloc(xrow*sizeof(double*));
+  for(int i = 0; i < xrow; i++){
+    y[i] = (double*)malloc(1*sizeof(double));
+  }
+  //populate grid
+  for(int i = 0; i < xrow; i++){
+    x[i][0] = 1;
+  }
+  double num;
+  for(int i = 0; i < xrow; i++){
+    for(int j = 1; j < xcol+1; j++){;
+      fscanf(f,"%lf%*[,]", &num);
+      x[i][j] = num;
     }
+    fscanf(f,"%lf", &num);
+    y[i][0] = num;
+    fscanf(f,"\n");
   }
-  /*grid = forward(grid, 3, 3);
-  grid = backward(grid,3, 3);*/
-  grid = Gauss(grid,3,3);
-  printMatrix(grid,3,3);
+  //x has dimensions xrow*xcol
+  //y has dimensions xrow*1
+  //w has dimensions (xcol-1)*1
+  double** w=(double**)malloc((xcol)*sizeof(double*));
+  for(int i = 0; i < xcol; i++){
+    w[i] = (double*)malloc(1*sizeof(double));
+  }
+  w = getW(x, y, xrow, xcol); //creating weights
+  //printMatrix(w, xcol-1, 1);
+  FILE * test = fopen(argv[2], "r"); //train file
+  if(test == NULL){
+    printf("error: file not found");
+    return 0;
+  }
+  int tests;
+  fscanf(test,"%d\n",&tests);
+  double** testmat=(double**)malloc(tests*sizeof(double*));
+  for(int i = 0; i < tests; i++){
+    testmat[i]=(double*)malloc((xcol)*sizeof(double));
+  }
+  double** prices=(double**)malloc(tests*sizeof(double*));
+  for(int i = 0; i < tests; i++){
+    prices[i]=(double*)malloc(1*sizeof(double));
+  }
+  for(int i = 0; i < tests; i++){
+    for(int j = 0; j < xcol; j++){
+      fscanf(test,"%lf%*[,]",&num);
+      testmat[i][j] = num;
+    }
+    fscanf(test,"\n");
+  }
+  prices = predict(testmat, w, tests, xrow, xcol);
+  printMatrix(prices, tests, 1);
+  //printMatrix(w,xcol,1);
   return 0;
 }
