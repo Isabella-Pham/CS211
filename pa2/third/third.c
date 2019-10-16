@@ -124,11 +124,10 @@ double** Gauss(double** matrix, int row, int col){
   aug = forward(aug, row, col);
   //backward elimination to get to RREF
   aug = backward(aug, row, col);
-  printMatrix(aug,3,6);
 
   double** inverse = (double**)malloc(row*sizeof(double*));
   for(int i = 0; i < col; i++){
-    aug[i] = (double*)malloc(col*sizeof(double));
+    inverse[i] = (double*)malloc(col*sizeof(double));
   }
   //retrieve inverse from augmented matrix
   for(int i = 0; i < row; i++){
