@@ -20,13 +20,13 @@ char** createGrid(FILE * f){
 }
 
 char getHex(int i){
-  if(i < 10) return i+'0';
   if(i == 10) return 'A';
   if(i == 11) return 'B';
   if(i == 12) return 'C';
   if(i == 13) return 'D';
   if(i == 14) return 'E';
   if(i == 15) return 'F';
+  return i+'0';
 }
 
 int getDec(char c){

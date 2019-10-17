@@ -82,9 +82,10 @@ double** backward(double** matrix, int row, int col){
 void printMatrix(double** matrix, int row, int col){
   for(int i = 0; i < row; i++){
     for(int j = 0; j < col; j++){
-      printf("%0.0lf\t", matrix[i][j]);
+      printf("%0.0lf", matrix[i][j]);
+      if(j < col-1) printf("\t");
     }
-    printf("\n");
+    if(i < row-1) printf("\n");
   }
 }
 
