@@ -82,7 +82,7 @@ double** backward(double** matrix, int row, int col){
 void printMatrix(double** matrix, int row, int col){
   for(int i = 0; i < row; i++){
     for(int j = 0; j < col; j++){
-      printf("%lf\t", matrix[i][j]);
+      printf("%0.0lf\t", matrix[i][j]);
     }
     printf("\n");
   }
@@ -130,8 +130,9 @@ double** Gauss(double** matrix, int row, int col){
 }
 
 double** getW(double** x, double ** y, int row, int col){
-  double** xT=(double**)malloc((col+1)*sizeof(double*));
-	for(int i = 0; i < col+1; i++){
+  col = col+1;
+  double** xT=(double**)malloc(col*sizeof(double*));
+	for(int i = 0; i < col; i++){
 		xT[i]=(double*)malloc(row*sizeof(double));
 	}
   double** xTx=(double**)malloc(col*sizeof(double*));
@@ -150,10 +151,9 @@ double** getW(double** x, double ** y, int row, int col){
   for(int i = 0; i < col; i++){
     w[i] = (double*)malloc(1*sizeof(double));
   }
-  xT = transpose(x, row, col+1);
+  xT = transpose(x, row, col);
   xTx = multiply(xT, x, col, row, row, col);
   xTxInv = Gauss(xTx,col,col);
-  //printMatrix(xTxInv,col,col);
   xTxInvxT = multiply(xTxInv,xT, col, col, col, row);
   w = multiply(xTxInvxT, y, col, row, row, 1);
   return w;
@@ -166,7 +166,8 @@ double** predict(double** test, double** w, int tests, int row, int col){
   }
   double price = w[0][0];
   for(int i = 0; i < tests; i++){
-    for(int j = 0; j < col-1; j++){
+    price = w[0][0];
+    for(int j = 0; j < col; j++){
       price = price+(test[i][j]*w[j+1][0]);
     }
     y[i][0] = price;
@@ -216,7 +217,6 @@ int main(int argc, char *argv[]) {
     w[i] = (double*)malloc(1*sizeof(double));
   }
   w = getW(x, y, xrow, xcol); //creating weights
-  //printMatrix(w, xcol-1, 1);
   FILE * test = fopen(argv[2], "r"); //train file
   if(test == NULL){
     printf("error: file not found");
@@ -241,6 +241,5 @@ int main(int argc, char *argv[]) {
   }
   prices = predict(testmat, w, tests, xrow, xcol);
   printMatrix(prices, tests, 1);
-  //printMatrix(w,xcol,1);
   return 0;
 }
