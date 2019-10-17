@@ -19,7 +19,7 @@ char** createGrid(FILE * f){
   return grid;
 }
 
-int getDec(char c){
+/*int getDec(char c){
   if(c == 'A') return 10;
   if(c == 'B') return 11;
   if(c == 'C') return 12;
@@ -37,6 +37,31 @@ char getHex(int i){
   if(i == 14) return 'E';
   if(i == 15) return 'F';
   return i+'0';
+}*/
+int getDec(char c){
+  int dec = 0;
+  if(c == 'A') dec=10;
+  else if(c == 'B') dec=11;
+  else if(c == 'C') dec=12;
+  else if(c == 'D') dec=13;
+  else if(c == 'E') dec=14;
+  else if(c == 'F') dec=15;
+  else dec = c-'0';
+  if(dec < 0 || dec > 15){
+    return 0;
+  }
+  return dec;
+}
+char getHex(int i){
+  char c = 'A';
+  if(i == 10) c = 'A';
+  else if(i == 11) c = 'B';
+  else if(i == 12) c = 'C';
+  else if(i == 13) c = 'D';
+  else if(i == 14) c = 'E';
+  else if(i == 15) c = 'F';
+  else c = i+'0';
+  return c;
 }
 
 void printGrid(char** grid){
@@ -118,13 +143,17 @@ char getChar(char * options){
 
 char** solve(char** grid){
   int num = numLeft(grid);
+  char * options = (char*)malloc(16*sizeof(char)); //= {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'}; //possible options to use to fill empty spot
+  for(int i = 0; i < 16; i++){
+    options[i] = getHex(i);
+  }
   while(canFill(grid)){
     int i,j;
     for(i = 0; i < 16; i++){
       char c;
       for(j = 0; j < 16; j++){
         if(grid[i][j] == '-'){
-          char * options = getOptions(grid, i, j);
+          options = getOptions(grid, i, j);
           c = getChar(options);
           if(c != 'Z'){
             grid[i][j] = c;
