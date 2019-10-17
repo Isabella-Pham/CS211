@@ -19,16 +19,6 @@ char** createGrid(FILE * f){
   return grid;
 }
 
-char getHex(int i){
-  if(i == 10) return 'A';
-  if(i == 11) return 'B';
-  if(i == 12) return 'C';
-  if(i == 13) return 'D';
-  if(i == 14) return 'E';
-  if(i == 15) return 'F';
-  return i+'0';
-}
-
 int getDec(char c){
   if(c == 'A') return 10;
   if(c == 'B') return 11;
@@ -37,6 +27,16 @@ int getDec(char c){
   if(c == 'E') return 14;
   if(c == 'F') return 15;
   return c-'0';
+}
+
+char getHex(int i){
+  if(i == 10) return 'A';
+  if(i == 11) return 'B';
+  if(i == 12) return 'C';
+  if(i == 13) return 'D';
+  if(i == 14) return 'E';
+  if(i == 15) return 'F';
+  return i+'0';
 }
 
 void printGrid(char** grid){
