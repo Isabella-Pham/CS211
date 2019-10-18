@@ -39,20 +39,19 @@ void printGrid(char** grid){
   }
 }
 
-bool canFill(char** grid, int* row, int* col){
-  //returns true if the grid is not filled
+int* getCoords(char** grid){
+  int * coords = (int*)malloc(2*sizeof(int));
   for(int i = 0; i < 16; i++){
     for(int j = 0; j < 16; j++){
       if(grid[i][j] == '-'){
-        *row = i;
-        *col = j;
-        return true;
+        coords[0] = i;
+        coords[1] = j;
+        return coords;
       }
     }
   }
-  return false;
+  return coords;
 }
-
 int numLeft(char** grid){ //returns the number of spaces left to solve
   int num = 0;
   for(int i = 0; i < 16; i++){
@@ -66,33 +65,36 @@ int numLeft(char** grid){ //returns the number of spaces left to solve
 bool canAssign(char** grid, int row, int col, char c){
   //checking row
   for(int i = 0; i < 16; i++){
-    if(grid[row][i] == c && i!=col) return false;
+    if(grid[row][i] == c) return false;
   }
   //checking column
   for(int i = 0; i < 16; i++){
-    if(grid[i][col] == c && i!=row) return false;
+    if(grid[i][col] == c) return false;
   }
   //checking box
   int boxRow = row-row%4;
   int boxCol = col-col%4;
   for(int i = 0; i < 4; i++){
     for(int j = 0; j < 4; j++){
-      if(grid[boxRow+i][boxCol+j] == c && i!=row && j!=col) return false;
+      if(grid[boxRow+i][boxCol+j] == c) return false;
     }
   }
   return true;
 }
 
 bool solve(char** grid){
-  if(numLeft(grid) == 0) printGrid(grid);
-  int row,col;
-  if(!canFill(grid, &row, &col)) return true;
+  if(numLeft(grid) == 0) return true;
+  //if(!canFill(grid, &row, &col)) return true; //this is where problem is
+  int* coords = getCoords(grid);
+  int row = coords[0];
+  int col = coords[1];
+  //printf("%d %d \n", row, col); //row and col are 0 and 1
   for(int i = 0; i < 16; i++){
     char hex = getHex(i);
     if(canAssign(grid, row, col, hex)){
       grid[row][col] = hex;
+      if(solve(grid)) return true;
     }
-    if(solve(grid)) return true;
     grid[row][col] = '-';
   }
   return false;
@@ -138,8 +140,8 @@ int main(int argc, char *argv[]){
   bool solved = solve(grid);
   if(!solved || !isLegitimate(grid)){
     printf("no-solution");
-  }/*else{
+  }else{
     printGrid(grid);
-  }*/
+  }
   return 0;
 }
