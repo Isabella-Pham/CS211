@@ -213,5 +213,6 @@ int main(int argc, char *argv[]){
   }else{
     printGrid(grid);
   }
+  free(grid);
   return 0;
 }

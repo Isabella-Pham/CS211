@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+void freeMatrix(double** matrix, int row){
+  for(int i = 0; i < row; i++){
+    free(matrix[i]);
+  }
+  free(matrix);
+}
+
+
 double** multiply(double** matrix1, double** matrix2, int row1, int row2, int col1, int col2){
   //create result matrix
   double** result=(double**)malloc(row1*sizeof(double*));
@@ -242,5 +250,15 @@ int main(int argc, char *argv[]) {
   }
   prices = predict(testmat, w, tests, xrow, xcol);
   printMatrix(prices, tests, 1);
+  //free x
+  freeMatrix(x,xrow);
+  //free y
+  freeMatrix(y,xrow);
+  //free w
+  freeMatrix(w,xcol);
+  //free testmat
+  freeMatrix(testmat,tests);
+  //free prices
+  freeMatrix(prices,tests);
   return 0;
 }
