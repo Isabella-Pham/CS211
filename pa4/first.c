@@ -5,26 +5,19 @@
 #include <math.h>
 
 //counters
-int mem_reads = 0;
-int mem_writes = 0;
-int cache_hits = 0;
-int cache_miss = 0;
+int reads = 0;
+int writes = 0;
+int hits = 0;
+int miss = 0;
 
-typedef struct block{
-    size_t tag;
-    size_t valid;
-}block;
-
-size_t getBlockOffset(size_t address, int blockOffset){
-  return address >> blockOffset;
+size_t getSetIndex(size_t address, int numBlockBits, int numSetBits){
+  //have to convert log2(numSetBits) to size_t without casting
+  //return (address >> numBlockBits)%(size_t)log2(numSetBits);
+  return (address>>numBlockBits)&((1<<numSetBits)-1);
 }
 
-size_t getSetIndex(size_t address, int blockOffset, int numSets){
-  return (address >> blockOffset)%numSets;
-}
-
-size_t getTagIndex(size_t address, int blockOffset, int setIndex){
-  return address >> (blockOffset+setIndex);
+size_t getTag(size_t address, int numBlockBits, int numSetBits){
+  return address >> (numBlockBits+numSetBits);
 }
 
 int getNumSets(int cache_size, int block_size, char* associativity){
@@ -39,7 +32,7 @@ int getNumSets(int cache_size, int block_size, char* associativity){
   for(int i = 6; i < length; i++){
     n[i-6] = associativity[i];
   }
-  return c/(b*atoi(n));
+  return cache_size/(block_size*atoi(n));
 }
 
 int getAssoc(int cache_size, int block_size, char* associativity){
@@ -58,19 +51,19 @@ int getAssoc(int cache_size, int block_size, char* associativity){
 }
 
 bool isPowerOf2(int i){
-  return (i != 0 && (c & (c-1) == 0));
+  return (i != 0 && (i & (i-1)) == 0);
 }
 
 bool isValid(int cache_size, int block_size, char * cache_policy, char * associativity, int prefetch_size){ //returns false if any of the inputs are invalid
-  if(!isPowerof2(cache_size)){
+  if(!isPowerOf2(cache_size)){
     printf("error: cache size is not a power of 2");
     return false;
   }
-  if(!isPowerof2(block_size)){
+  if(!isPowerOf2(block_size)){
     printf("error: block size is not a power of 2");
     return false;
   }
-  if(strcmp(cache_policy, "fifo") != 0 || strcmp(cache_policy,"lru") != 0){
+  if(strcmp(cache_policy, "fifo") != 0 && strcmp(cache_policy,"lru") != 0){
     printf("error: invalid cache policy");
     return false;
   }
@@ -80,6 +73,41 @@ bool isValid(int cache_size, int block_size, char * cache_policy, char * associa
     return false;
   }
   return true;
+}
+
+bool isInCache(size_t** cache, size_t address, int numBlockOffBits, int numSetBits, int numBlocks){
+  size_t setIndex = getSetIndex(address, numBlockOffBits, numSetBits);
+  size_t tag = getTag(address, numBlockOffBits, numSetBits);
+  for(int i = 0; i < numBlocks; i++){
+    if(cache[setIndex][i] == tag){
+      return true;
+    }else if(cache[setIndex][i] == (size_t)NULL){
+      return false;
+    }
+  }
+  return false;
+}
+
+size_t** insert(size_t** cache, size_t address, int numBlockOffBits, int numSetBits, int numBlocks){
+  size_t setIndex = getSetIndex(address, numBlockOffBits, numSetBits);
+  size_t tag = getTag(address, numBlockOffBits, numSetBits);
+  bool inserted = false;
+  for(int i = 0; i < numBlocks; i++){
+    if(cache[setIndex][i] == (size_t)NULL){
+      cache[setIndex][i] = tag;
+      inserted = true;
+      break;
+    }
+  }
+  if(!inserted){ //this means that the set is full
+    //shift everything one left
+    for(int i = 1; i < numBlocks; i++){
+      cache[setIndex][i-1] = cache[setIndex][i];
+    }
+    cache[setIndex][numBlocks-1] = tag;
+  }
+  return cache;
+
 }
 
 int main(int argc, char *argv[]){
@@ -96,20 +124,52 @@ int main(int argc, char *argv[]){
   if(!isValid(cache_size, block_size, cache_policy, associativity, prefetch_size)){
     return 0;
   }
+
   int numSets = getNumSets(cache_size, block_size, associativity);
   int numBlocks = cache_size/(numSets*block_size);
   int numBlockOffBits = log2(block_size);
   int numSetBits = log2(numSets);
   int assoc = getAssoc(cache_size, block_size, associativity);
 
-  block** cache =(block**)malloc(numSets*sizeof(block*)); //each row is a set
+  size_t** cache =(size_t**)malloc(numSets*sizeof(size_t*)); //each row is a set
   for(int i = 0; i < numSets; i++){
-    cache[i] = (block*)malloc(numBlocks*sizeof(block)); //each column is a block
+    cache[i] = (size_t*)malloc(numBlocks*sizeof(size_t)); //each column is a block
+    for(int j = 0; j < numBlocks; j++){
+      cache[i][j] = (size_t)NULL;
+    }
   }
 
   FILE * trace_file = fopen(argv[6], "r");
-  if(f==NULL){ //file not found
+  if(trace_file==NULL){ //file not found
     printf("error: file not found");
     return 0;
   }
+  char action;
+  size_t address;
+  while(fscanf(trace_file,"%c %zx\n", &action, &address) != EOF){
+    if(action == '#') break;
+    if(action == 'W') writes++;
+    if(isInCache(cache, address, numBlockOffBits, numSetBits, numBlocks)){
+      hits++;
+    }else{
+      miss++;
+      reads++;
+      cache = insert(cache, address, numBlockOffBits, numSetBits, numBlocks);
+    }
+  }
+
+  //no prefetch
+  printf("no-prefetch\n");
+  printf("Memory reads: %d\n",reads);
+  printf("Memory writes: %d\n",writes);
+  printf("Cache hits: %d\n",hits);
+  printf("Cache misses: %d\n",miss);
+
+  //prefetch
+  printf("with-prefetch\n");
+  printf("Memory reads: %d\n",reads);
+  printf("Memory writes: %d\n",writes);
+  printf("Cache hits: %d\n",hits);
+  printf("Cache misses: %d\n",miss);
+  return 0;
 }
