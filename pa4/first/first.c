@@ -164,11 +164,12 @@ void prefetch(FILE * trace_file, size_t** cache, int blockSize, int numBlockOffB
       prefetchMiss++;
       prefetchReads++;
       cache = insert(cache, address, numBlockOffBits, numSetBits, numBlocks);
+      size_t add = address;
       for(int i = 0; i < prefetch_size; i++){
-        address = address + blockSize;
-        if(!isInCache(cache, address, numBlockOffBits, numSetBits, numBlocks)){
+        add = add + blockSize;
+        if(!isInCache(cache, add, numBlockOffBits, numSetBits, numBlocks)){
           prefetchReads++;
-          cache = insert(cache, address, numBlockOffBits, numSetBits, numBlocks);
+          cache = insert(cache, add, numBlockOffBits, numSetBits, numBlocks);
         }
       }
     }
