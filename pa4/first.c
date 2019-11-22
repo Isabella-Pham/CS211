@@ -5,8 +5,10 @@
 #include <math.h>
 
 //counters
-int reads = 0;
-int writes = 0;
+int noPrefetchReads = 0;
+int noPrefetchWrites = 0;
+int prefetchReads = 0;
+int prefetchWrites = 0;
 int hits = 0;
 int miss = 0;
 
@@ -110,6 +112,38 @@ size_t** insert(size_t** cache, size_t address, int numBlockOffBits, int numSetB
 
 }
 
+void noPrefetch(FILE * trace_file, size_t** cache, int numBlockOffBits, int numSetBits, int numBlocks){
+  char action;
+  size_t address;
+  while(fscanf(trace_file,"%c %zx\n", &action, &address) != EOF){
+    if(action == '#') break;
+    if(action == 'W') noPrefetchWrites++;
+    if(isInCache(cache, address, numBlockOffBits, numSetBits, numBlocks)){
+      hits++;
+    }else{
+      miss++;
+      noPrefetchReads++;
+      cache = insert(cache, address, numBlockOffBits, numSetBits, numBlocks);
+    }
+  }
+  return;
+}
+
+void prefetch(FILE * trace_file, size_t** cache, int numBlockOffBits, int numSetBits, int numBlocks, int prefetch_size){
+  char action;
+  size_t address;
+  while(fscanf(trace_file,"%c %zx\n", &action, &address) != EOF){
+    if(action == '#') break;
+    if(action == 'W') prefetchWrites++;
+    if(isInCache(cache, address, numBlockOffBits, numSetBits, numBlocks)){
+    }else{
+      prefetchReads++;
+      cache = insert(cache, address, numBlockOffBits, numSetBits, numBlocks);
+    }
+  }
+  return;
+}
+
 int main(int argc, char *argv[]){
   if(argc != 7){
     printf("error: invalid number of arguments");
@@ -144,32 +178,39 @@ int main(int argc, char *argv[]){
     printf("error: file not found");
     return 0;
   }
-  char action;
-  size_t address;
-  while(fscanf(trace_file,"%c %zx\n", &action, &address) != EOF){
-    if(action == '#') break;
-    if(action == 'W') writes++;
-    if(isInCache(cache, address, numBlockOffBits, numSetBits, numBlocks)){
-      hits++;
-    }else{
-      miss++;
-      reads++;
-      cache = insert(cache, address, numBlockOffBits, numSetBits, numBlocks);
+
+  noPrefetch(trace_file, cache, numBlockOffBits, numSetBits, numBlocks);
+
+  //resetting cache for prefetch
+  for(int i = 0; i < numSets; i++){
+    for(int j = 0; j < numBlocks; j++){
+      cache[i][j] = (size_t)NULL;
     }
   }
 
+  //moving file pointer back to the top of the file
+  rewind(trace_file);
+
   //no prefetch
   printf("no-prefetch\n");
-  printf("Memory reads: %d\n",reads);
-  printf("Memory writes: %d\n",writes);
+  printf("Memory reads: %d\n",noPrefetchReads);
+  printf("Memory writes: %d\n",noPrefetchWrites);
   printf("Cache hits: %d\n",hits);
   printf("Cache misses: %d\n",miss);
 
   //prefetch
   printf("with-prefetch\n");
-  printf("Memory reads: %d\n",reads);
-  printf("Memory writes: %d\n",writes);
+  printf("Memory reads: %d\n",prefetchReads);
+  printf("Memory writes: %d\n",prefetchWrites);
   printf("Cache hits: %d\n",hits);
   printf("Cache misses: %d\n",miss);
+
+  //freeing cache
+  for(int i = 0; i < numSets; i++){
+    for(int j = 0; j < numBlocks; j++){
+      free(cache[i][j]);
+    }
+  }
+
   return 0;
 }
