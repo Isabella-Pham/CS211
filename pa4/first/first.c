@@ -39,21 +39,6 @@ int getNumSets(int cache_size, int block_size, char* associativity){
   return cache_size/(block_size*atoi(n));
 }
 
-int getAssoc(int cache_size, int block_size, char* associativity){
-  if(strcmp(associativity, "direct") == 0){
-    return 1;
-  }
-  if(strcmp(associativity, "assoc") == 0){
-    return cache_size/block_size;
-  }
-  size_t length = strlen(associativity);
-  char n[length-6];
-  for(int i = 6; i < length; i++){
-    n[i-6] = associativity[i];
-  }
-  return atoi(n);
-}
-
 bool isPowerOf2(int i){
   return (i != 0 && (i & (i-1)) == 0);
 }
@@ -118,12 +103,15 @@ size_t** LRU(size_t** cache, size_t address, int numBlockOffBits, int numSetBits
   size_t setIndex = getSetIndex(address, numBlockOffBits, numSetBits);
   size_t tag = getTag(address, numBlockOffBits, numSetBits);
   bool shift = false;
-  for(int i = 0; i < numBlocks-1; i++){
+  int i;
+  for(i = 0; i < numBlocks-1; i++){
+    if(cache[setIndex][i+1] == (size_t)NULL) break;
     if(cache[setIndex][i] == tag || shift){
+      shift = true;
       cache[setIndex][i] = cache[setIndex][i+1];
     }
   }
-  cache[setIndex][numBlocks-1] = tag;
+  cache[setIndex][i] = tag;
   return cache;
 }
 
@@ -196,7 +184,6 @@ int main(int argc, char *argv[]){
   int numBlocks = cache_size/(numSets*block_size);
   int numBlockOffBits = log2(block_size);
   int numSetBits = log2(numSets);
-  //int assoc = getAssoc(cache_size, block_size, associativity);
 
   size_t** cache =(size_t**)malloc(numSets*sizeof(size_t*)); //each row is a set
   for(int i = 0; i < numSets; i++){
