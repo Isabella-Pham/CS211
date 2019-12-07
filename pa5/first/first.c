@@ -91,6 +91,12 @@ int** createGreyCode(int numInputs, int numOutputs){
   return greyCode;
 }
 int getValue(int** greyCode, node* inputs, node* outputs, char* inputName, int row){
+  if(strcmp(inputName, "1") == 0){
+    return 1;
+  }
+  if(strcmp(inputName, "0") == 0){
+    return 0;
+  }
   node* ptr = inputs;
   int col = 0;
   while(ptr != NULL){
@@ -107,7 +113,8 @@ int getValue(int** greyCode, node* inputs, node* outputs, char* inputName, int r
     }
     ptr = ptr -> next;
   }
-  return 1; //input value not found
+  printf("%s\n", inputName);
+  return -1; //input value not found
 }
 node * setValue(node * outputs, char * outName, int out){
   node * ptr = outputs;
@@ -135,7 +142,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
   //FILE * start = f; //start is the start of the circuit
   int numRows = pow(2, numInputs);
   int numCols = numInputs + numOutputs;
-  char line[256];
+  char line[420];
   fgets(line, sizeof(line), f);
   for(int i = 0; i < numRows; i++){
     node* ptr = inputs;
@@ -148,8 +155,8 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
       token = strtok(line, " ");
       char * action = token;
       if(strcmp(action, "NOT") == 0){
-        char * inName = strtok(NULL, " ");
-        char * outName = strtok(NULL, " ");
+        char * inName = strtok(NULL, " \n");
+        char * outName = strtok(NULL, " \n");
         int in = getValue(greyCode, inputs, outputs, inName, i);
         int out = not(in);
         outputs = addLL(outputs, outName);
@@ -216,7 +223,6 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
         for(int j = 0; j < numDecInputs; j++){
           char* inName = strtok(NULL, " \n");
           target[j] = getValue(greyCode, inputs, outputs, inName, i);
-          printf("%d\n", target[j]);
         }
         int out = 1;
         for(int j = 0; j < rows; j++){
@@ -236,14 +242,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
         //populating the possible multiplexer inputs in an array
         for(int j = 0; j < num; j++){
           char * val = strtok(NULL, " \n");
-          int input;
-          if(strcmp(val, "1") == 0){
-            input = 1;
-          }else if(strcmp(val, "0") == 0){
-            input = 0;
-          }else{
-            input = getValue(greyCode, inputs, outputs, val, i);
-          }
+          int input = getValue(greyCode, inputs, outputs, val, i);
           multi[j] = input;
         }
         //determining which multiplexer input to use based on selector
