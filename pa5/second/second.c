@@ -50,6 +50,7 @@ node* addLL(node* head, char* name){
   strcpy(copy, name);
   add->name = copy;
   add->next = NULL;
+  add->value = -1; //default value
   if(head == NULL) return add;
   node* ptr = head;
   while(ptr->next != NULL){
@@ -168,6 +169,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * inName = strtok(NULL, " \n");
           char * outName = strtok(NULL, " \n");
           int in = getValue(greyCode, inputs, outputs, inName, i);
+          if(in == -1) continue;
           int out = not(in);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
@@ -177,6 +179,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * outName = strtok(NULL, " \n");
           int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
           int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          if(in1 == -1 || in2 == -1) continue;
           int out = and(in1, in2);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out); //something wrong with setting output for second AND
@@ -186,6 +189,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * outName = strtok(NULL, " \n");
           int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
           int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          if(in1 == -1 || in2 == -1) continue;
           int out = or(in1, in2);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
@@ -195,6 +199,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * outName = strtok(NULL, " \n");
           int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
           int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          if(in1 == -1 || in2 == -1) continue;
           int out = nand(in1, in2);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
@@ -204,6 +209,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * outName = strtok(NULL, " \n");
           int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
           int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          if(in1 == -1 || in2 == -1) continue;
           int out = nor(in1, in2);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
@@ -213,6 +219,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * outName = strtok(NULL, " \n");
           int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
           int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          if(in1 == -1 || in2 == -1) continue;
           int out = xor(in1, in2);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
@@ -222,6 +229,7 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * outName = strtok(NULL, " \n");
           int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
           int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          if(in1 == -1 || in2 == -1) continue;
           int out = xnor(in1, in2);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
@@ -230,10 +238,16 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           int** grey = createGreyCode(numDecInputs,0);
           int rows = pow(2, numDecInputs);
           int* target = (int*)malloc(numDecInputs*sizeof(int));
+          bool nextLine = false;
           for(int j = 0; j < numDecInputs; j++){
             char* inName = strtok(NULL, " \n");
             target[j] = getValue(greyCode, inputs, outputs, inName, i);
+            if(target[j] == -1){
+              nextLine = true;
+              break;
+            }
           }
+          if(nextLine) continue;
           int out = 1;
           for(int j = 0; j < rows; j++){
             for(int k = 0; k < numDecInputs; k++){
@@ -249,12 +263,18 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
           char * numMultiInput = strtok(NULL, " \n");
           int num = atoi(numMultiInput);
           int multi[num];
+          bool nextLine = false;
           //populating the possible multiplexer inputs in an array
           for(int j = 0; j < num; j++){
             char * val = strtok(NULL, " \n");
             int input = getValue(greyCode, inputs, outputs, val, i);
             multi[j] = input;
+            if(multi[j] == -1){
+              nextLine = true;
+              break;
+            }
           }
+          if(nextLine) continue;
           //determining which multiplexer input to use based on selector
           int numSelectors = log2(num);
           int* selectorInput = (int*)malloc(numSelectors*sizeof(int));
@@ -262,7 +282,12 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
             char * selector = strtok(NULL, " \n");
             int selectorVal = getValue(greyCode, inputs, outputs, selector, i);
             selectorInput[j] = selectorVal;
+            if(selectorInput[j] == -1){
+              nextLine = true;
+              break;
+            }
           }
+          if(nextLine) continue;
           int index = getMultiIndex(selectorInput, numSelectors);
           char * outName = strtok(NULL, " \n");
           int out = multi[index];
