@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <math.h>
 
+int numInput = 0;
+int numOutput = 0;
+
 typedef struct node{
   char * name;
   int value;
@@ -113,7 +116,6 @@ int getValue(int** greyCode, node* inputs, node* outputs, char* inputName, int r
     }
     ptr = ptr -> next;
   }
-  printf("%s\n", inputName);
   return -1; //input value not found
 }
 node * setValue(node * outputs, char * outName, int out){
@@ -138,8 +140,15 @@ int getMultiIndex(int* selectorInput, int numSelectors){
   }
   return -1; //not found
 }
+bool done(node* outputs){
+  node* ptr = outputs;
+  while(ptr != NULL){
+    if(ptr->value != 0 && ptr->value != 1) return false;
+    ptr = ptr->next;
+  }
+  return true;
+}
 int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, node* outputs, FILE * f){
-  //FILE * start = f; //start is the start of the circuit
   int numRows = pow(2, numInputs);
   int numCols = numInputs + numOutputs;
   char line[420];
@@ -150,127 +159,130 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
       ptr->value = greyCode[i][j];
       ptr = ptr->next;
     }
-    while(fgets(line, sizeof(line), f)){
-      char * token;
-      token = strtok(line, " ");
-      char * action = token;
-      if(strcmp(action, "NOT") == 0){
-        char * inName = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in = getValue(greyCode, inputs, outputs, inName, i);
-        int out = not(in);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
-      }else if(strcmp(action, "AND") == 0){
-        char * in1Name = strtok(NULL, " \n");
-        char * in2Name = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
-        int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
-        int out = and(in1, in2);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out); //something wrong with setting output for second AND
-      }else if(strcmp(action, "OR") == 0){
-        char * in1Name = strtok(NULL, " \n");
-        char * in2Name = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
-        int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
-        int out = or(in1, in2);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
-      }else if(strcmp(action, "NAND") == 0){
-        char * in1Name = strtok(NULL, " \n");
-        char * in2Name = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
-        int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
-        int out = nand(in1, in2);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
-      }else if(strcmp(action, "NOR") == 0){
-        char * in1Name = strtok(NULL, " \n");
-        char * in2Name = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
-        int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
-        int out = nor(in1, in2);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
-      }else if(strcmp(action, "XOR") == 0){
-        char * in1Name = strtok(NULL, " \n");
-        char * in2Name = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
-        int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
-        int out = xor(in1, in2);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
-      }else if(strcmp(action, "XNOR") == 0){
-        char * in1Name = strtok(NULL, " \n");
-        char * in2Name = strtok(NULL, " \n");
-        char * outName = strtok(NULL, " \n");
-        int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
-        int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
-        int out = xnor(in1, in2);
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
-      }else if(strcmp(action, "DECODER") == 0){
-        int numDecInputs = atoi(strtok(NULL, " \n"));
-        int** grey = createGreyCode(numDecInputs,0);
-        int rows = pow(2, numDecInputs);
-        int* target = (int*)malloc(numDecInputs*sizeof(int));
-        for(int j = 0; j < numDecInputs; j++){
-          char* inName = strtok(NULL, " \n");
-          target[j] = getValue(greyCode, inputs, outputs, inName, i);
-        }
-        int out = 1;
-        for(int j = 0; j < rows; j++){
-          for(int k = 0; k < numDecInputs; k++){
-            if(grey[j][k] != target[k]) out = 0;
-          }
-          char* outName = strtok(NULL, " \n");
+    while(!done(outputs)){
+      while(fgets(line, sizeof(line), f)){
+        char * token;
+        token = strtok(line, " ");
+        char * action = token;
+        if(strcmp(action, "NOT") == 0){
+          char * inName = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in = getValue(greyCode, inputs, outputs, inName, i);
+          int out = not(in);
           outputs = addLL(outputs, outName);
           outputs = setValue(outputs, outName, out);
-          out = 1;
+        }else if(strcmp(action, "AND") == 0){
+          char * in1Name = strtok(NULL, " \n");
+          char * in2Name = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
+          int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          int out = and(in1, in2);
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out); //something wrong with setting output for second AND
+        }else if(strcmp(action, "OR") == 0){
+          char * in1Name = strtok(NULL, " \n");
+          char * in2Name = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
+          int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          int out = or(in1, in2);
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out);
+        }else if(strcmp(action, "NAND") == 0){
+          char * in1Name = strtok(NULL, " \n");
+          char * in2Name = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
+          int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          int out = nand(in1, in2);
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out);
+        }else if(strcmp(action, "NOR") == 0){
+          char * in1Name = strtok(NULL, " \n");
+          char * in2Name = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
+          int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          int out = nor(in1, in2);
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out);
+        }else if(strcmp(action, "XOR") == 0){
+          char * in1Name = strtok(NULL, " \n");
+          char * in2Name = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
+          int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          int out = xor(in1, in2);
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out);
+        }else if(strcmp(action, "XNOR") == 0){
+          char * in1Name = strtok(NULL, " \n");
+          char * in2Name = strtok(NULL, " \n");
+          char * outName = strtok(NULL, " \n");
+          int in1 = getValue(greyCode, inputs, outputs, in1Name, i);
+          int in2 = getValue(greyCode, inputs, outputs, in2Name, i);
+          int out = xnor(in1, in2);
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out);
+        }else if(strcmp(action, "DECODER") == 0){
+          int numDecInputs = atoi(strtok(NULL, " \n"));
+          int** grey = createGreyCode(numDecInputs,0);
+          int rows = pow(2, numDecInputs);
+          int* target = (int*)malloc(numDecInputs*sizeof(int));
+          for(int j = 0; j < numDecInputs; j++){
+            char* inName = strtok(NULL, " \n");
+            target[j] = getValue(greyCode, inputs, outputs, inName, i);
+          }
+          int out = 1;
+          for(int j = 0; j < rows; j++){
+            for(int k = 0; k < numDecInputs; k++){
+              if(grey[j][k] != target[k]) out = 0;
+            }
+            char* outName = strtok(NULL, " \n");
+            outputs = addLL(outputs, outName);
+            outputs = setValue(outputs, outName, out);
+            out = 1;
+          }
+        }else if(strcmp(action, "MULTIPLEXER") == 0){
+          //determine what value the selectors produce e.g. if produce 00 then choose the first multiplexer input
+          char * numMultiInput = strtok(NULL, " \n");
+          int num = atoi(numMultiInput);
+          int multi[num];
+          //populating the possible multiplexer inputs in an array
+          for(int j = 0; j < num; j++){
+            char * val = strtok(NULL, " \n");
+            int input = getValue(greyCode, inputs, outputs, val, i);
+            multi[j] = input;
+          }
+          //determining which multiplexer input to use based on selector
+          int numSelectors = log2(num);
+          int* selectorInput = (int*)malloc(numSelectors*sizeof(int));
+          for(int j = 0; j < numSelectors; j++){
+            char * selector = strtok(NULL, " \n");
+            int selectorVal = getValue(greyCode, inputs, outputs, selector, i);
+            selectorInput[j] = selectorVal;
+          }
+          int index = getMultiIndex(selectorInput, numSelectors);
+          char * outName = strtok(NULL, " \n");
+          int out = multi[index];
+          outputs = addLL(outputs, outName);
+          outputs = setValue(outputs, outName, out);
         }
-      }else if(strcmp(action, "MULTIPLEXER") == 0){
-        //determine what value the selectors produce e.g. if produce 00 then choose the first multiplexer input
-        char * numMultiInput = strtok(NULL, " \n");
-        int num = atoi(numMultiInput);
-        int multi[num];
-        //populating the possible multiplexer inputs in an array
-        for(int j = 0; j < num; j++){
-          char * val = strtok(NULL, " \n");
-          int input = getValue(greyCode, inputs, outputs, val, i);
-          multi[j] = input;
-        }
-        //determining which multiplexer input to use based on selector
-        int numSelectors = log2(num);
-        int* selectorInput = (int*)malloc(numSelectors*sizeof(int));
-        for(int j = 0; j < numSelectors; j++){
-          char * selector = strtok(NULL, " \n");
-          int selectorVal = getValue(greyCode, inputs, outputs, selector, i);
-          selectorInput[j] = selectorVal;
-        }
-        int index = getMultiIndex(selectorInput, numSelectors);
-        char * outName = strtok(NULL, " \n");
-        int out = multi[index];
-        outputs = addLL(outputs, outName);
-        outputs = setValue(outputs, outName, out);
       }
-      /*while(token != NULL){
-
-      }*/
-    }
+      rewind(f);
+      ptr = outputs;
+      for(int j = numInputs; j < numCols; j++){
+        greyCode[i][j] = ptr->value;
+        ptr = ptr->next;
+      }
+      //rewind(f);
+    } //move pointer back to start of circuit description
     ptr = outputs;
-    for(int j = numInputs; j < numCols; j++){
-      greyCode[i][j] = ptr->value;
+    while(ptr != NULL){ //resetting outputs
+      ptr->value = -1;
       ptr = ptr->next;
     }
-    rewind(f); //move pointer back to start of circuit description
-    fgets(line, sizeof(line), f); //skip input line
-    fgets(line, sizeof(line), f); //skip output line
   }
   return greyCode;
 }
@@ -278,26 +290,40 @@ node* getInputs(FILE * f){
   node* inputs = (node*)malloc(sizeof(node));
   inputs = NULL;
   char* name = (char*)malloc(21*sizeof(char));
-  int numInput;
   char line[420];
+  char * token;
   while(fgets(line, sizeof(line), f)){
-  }
-  fscanf(f, "INPUTVAR %d", &numInput);
-  for(int i = 0; i < numInput; i++){
-    fscanf(f, " %s", name);
-    inputs = addLL(inputs, name);
+    token = strtok(line, " ");
+    if(strcmp(token, "INPUTVAR") != 0){
+      continue;
+    }
+    numInput = atoi(strtok(NULL, " \n"));
+    for(int i = 0; i < numInput; i++){
+      name = strtok(NULL, " \n");
+      inputs = addLL(inputs, name);
+    }
+    break;
   }
   rewind(f);
   return inputs;
 }
 node* getOutputs(FILE * f){
-  int numOutput;
-  fscanf(f, "\nOUTPUTVAR %d", &numOutput);
-  node* outputs;
+  node* outputs = (node*)malloc(sizeof(node));
   outputs = NULL;
-  for(int i = 0; i < numOutput; i++){
-    fscanf(f, " %s", name);
-    outputs = addLL(outputs, name);
+  char* name = (char*)malloc(21*sizeof(char));
+  char line[420];
+  char * token;
+  while(fgets(line, sizeof(line), f)){
+    token = strtok(line, " \n");
+    if(strcmp(token, "OUTPUTVAR") != 0){
+      continue;
+    }
+    numOutput = atoi(strtok(NULL, " \n"));
+    for(int i = 0; i < numOutput; i++){
+      name = strtok(NULL, " \n");
+      outputs = addLL(outputs, name);
+    }
+    break;
   }
   rewind(f);
   return outputs;
