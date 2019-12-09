@@ -164,7 +164,7 @@ def file_grade(dirname):
                 print ""
 
 
-            if resultfile[len(resultfile)-5] == "1" :
+            if resultfile[len(resultfile)-5] == "2" :
                 try:
                     run_command("./%s 512 16 fifo direct 1 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -172,7 +172,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "my score is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "2" :
+            elif resultfile[len(resultfile)-5] == "1" :
                 try:
                     run_command("./%s 512 16 fifo direct 2 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -180,7 +180,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "myScore is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "3" :
+            elif resultfile[len(resultfile)-5] == "4" :
                 try:
                     run_command("./%s 512 16 fifo assoc:4 1 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -188,7 +188,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "my score is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "4" :
+            elif resultfile[len(resultfile)-5] == "3" :
                 try:
                     run_command("./%s 512 8 fifo assoc:8 1 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -196,7 +196,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "myScore is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "5" :
+            elif resultfile[len(resultfile)-5] == "6" :
                 try:
                     run_command("./%s 1024 1 fifo assoc:2 2 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -204,7 +204,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "myScore is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "6" :
+            elif resultfile[len(resultfile)-5] == "5" :
                 try:
                     run_command("./%s 512 4 fifo assoc:2 1 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -213,7 +213,7 @@ def file_grade(dirname):
                     print "myScore is ", myscore
 
 
-            elif resultfile[len(resultfile)-5] == "7" :
+            elif resultfile[len(resultfile)-5] == "8" :
                 try:
                     run_command("./%s 128 32 fifo assoc 2 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -221,7 +221,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "myScore is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "8" :
+            elif resultfile[len(resultfile)-5] == "7" :
                 try:
                     run_command("./%s 512 32 fifo assoc 4 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -229,7 +229,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "myScore is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "9" :
+            elif resultfile[len(resultfile)-5] == "a" :
                 try:
                     run_command("./%s 512 4 lru assoc:2 2 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:
@@ -237,7 +237,7 @@ def file_grade(dirname):
                     os.chdir(prevdir)
                     print "myScore is ", myscore
                     #return
-            elif resultfile[len(resultfile)-5] == "a" :
+            elif resultfile[len(resultfile)-5] == "9" :
                 try:
                     run_command("./%s 1024 2 lru assoc 4 %s > %s"%(dirname, input_dir + "/" + testfile,resultfile), timeout=runtime[dirname], user_program=True, echo=True);
                 except:

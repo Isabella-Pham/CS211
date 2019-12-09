@@ -363,6 +363,21 @@ void printGreyCode(int** greyCode, int numInputs, int numOutputs){
     printf("\n");
   }
 }
+void freeGreyCode(int** greyCode, int numInput){
+  int numRows = pow(2, numInput);
+  for(int i = 0; i < numRows; i++){
+    free(greyCode[i]);
+  }
+  free(greyCode);
+}
+void freeLL(node* head){
+  node* ptr;
+  while(head != NULL){
+    ptr = head;
+    head = head->next;
+    free(ptr);
+  }
+}
 int main(int argc, char *argv[]){
   FILE * f = fopen(argv[1], "r");
   if(f==NULL){ //file not found
@@ -374,5 +389,9 @@ int main(int argc, char *argv[]){
   int** greyCode = createGreyCode(numInput, numOutput);
   greyCode = calcOutput(greyCode, numInput, numOutput, inputs, outputs, f);
   printGreyCode(greyCode, numInput, numOutput);
+  freeLL(inputs);
+  freeLL(outputs);
+  freeGreyCode(greyCode, numInput);
+  fclose(f);
   return 0;
 }
