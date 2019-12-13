@@ -131,7 +131,7 @@ node * setValue(node * outputs, char * outName, int out){
   return outputs;
 }
 int getMultiIndex(int* selectorInput, int numSelectors){
-  int** greycode = createGreyCode(numSelectors, 0);
+  /*int** greycode = createGreyCode(numSelectors, 0);
   int numRows = pow(2, numSelectors);
   for(int i = 0; i < numRows; i++){
     for(int j = 0; j < numSelectors; j++){
@@ -139,7 +139,16 @@ int getMultiIndex(int* selectorInput, int numSelectors){
       if(j == numSelectors-1) return i;
     }
   }
-  return -1; //not found
+  return -1;*/ //not found
+  int binary = 0;
+  for(int i = 0; i < numSelectors; i++){
+    binary += selectorInput[i]*pow(2, i);
+  }
+  int index = 0;
+  for(; binary; binary = binary >> 1){
+    index ^= binary;
+  }
+  return index;
 }
 bool done(node* outputs){
   node* ptr = outputs;
@@ -308,6 +317,8 @@ int** calcOutput(int** greyCode, int numInputs, int numOutputs, node* inputs, no
       ptr->value = -1;
       ptr = ptr->next;
     }
+    printLL(inputs);
+    printLL(outputs);
   }
   return greyCode;
 }
